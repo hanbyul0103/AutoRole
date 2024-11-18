@@ -6,6 +6,7 @@ let firstGradeRole, secondGradeRole, thirdGradeRole, student, graduate;
 let gradeRoles;
 let members;
 let ownerId;
+const batchSize = 30; // 전역 변수로 배치 크기 설정
 
 const client = new Client({
     intents: [
@@ -66,9 +67,36 @@ async function GetRoles() {
 }
 
 async function RoleAssignment(message) {
-    for (const member of members.values()) {
-        const nickname = member.nickname || 'None';
+    const memberList = Array.from(members.values());
 
+    for (let i = 0; i < memberList.length; i += batchSize) {
+        const batch = memberList.slice(i, i + batchSize);
+        const rolePromises = batch.map(ProcessMemberRole);
+        await Promise.all(rolePromises);
+        await delay(1000); // 1초 지연
+    }
+
+    await message.reply("부여 완료");
+}
+
+async function ChangeNickname(message) {
+    const memberList = Array.from(members.values())
+        .filter(member => member.id !== ownerId);
+
+    for (let i = 0; i < memberList.length; i += batchSize) {
+        const batch = memberList.slice(i, i + batchSize);
+        const nicknamePromises = batch.map(ProcessNicknameChange);
+        await Promise.all(nicknamePromises);
+        await delay(1000); // 1초 지연
+    }
+
+    await message.reply('변경 완료');
+}
+
+async function ProcessMemberRole(member) {
+    const nickname = member.nickname || member.user.username;
+
+    try {
         if (!member.roles.cache.has(student.id)) {
             await member.roles.add(student);
         }
@@ -80,37 +108,30 @@ async function RoleAssignment(message) {
         } else if (nickname.includes('3학년')) {
             await UpdateRoles(member, thirdGradeRole);
         }
+    } catch (error) {
+        console.error(`Error processing role for ${member.user.tag}:`, error);
     }
-
-    await message.reply("부여 완료");
 }
 
-async function ChangeNickname(message) {
-    for (const member of members.values()) {
-        if (member.id === ownerId) continue;
+async function ProcessNicknameChange(member) {
+    const nickname = member.nickname || member.user.username;
+    const name = nickname.split(' ')[0];
 
-        const nickname = member.nickname || member.user.username;
-        const name = nickname.split(' ')[0];
-
-        try {
-            if (nickname.includes('1학년')) {
-                await member.setNickname(`${name} (2학년)`);
-                await UpdateRoles(member, secondGradeRole);
-            } else if (nickname.includes('2학년')) {
-                await member.setNickname(`${name} (3학년)`);
-                await UpdateRoles(member, thirdGradeRole);
-            } else if (nickname.includes('3학년')) {
-                await member.setNickname(`${name} (졸업생)`);
-                await member.roles.remove(student);
-                await UpdateRoles(member, graduate);
-            }
-
-        } catch (error) {
-            console.error(`Error changing nickname for ${member.user.tag}:`, error);
+    try {
+        if (nickname.includes('1학년')) {
+            await member.setNickname(`${name} (2학년)`);
+            await UpdateRoles(member, secondGradeRole);
+        } else if (nickname.includes('2학년')) {
+            await member.setNickname(`${name} (3학년)`);
+            await UpdateRoles(member, thirdGradeRole);
+        } else if (nickname.includes('3학년')) {
+            await member.setNickname(`${name} (졸업생)`);
+            await member.roles.remove(student);
+            await UpdateRoles(member, graduate);
         }
+    } catch (error) {
+        console.error(`Error changing nickname for ${member.user.tag}:`, error);
     }
-
-    await message.reply('변경 완료');
 }
 
 async function UpdateRoles(member, targetRole) {
@@ -129,6 +150,10 @@ async function UpdateRoles(member, targetRole) {
     } catch (error) {
         console.error('Error updating roles for', member.user.tag, ':', error);
     }
+}
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 client.login(config.token);
