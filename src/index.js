@@ -4,6 +4,7 @@ const { Client, IntentsBitField } = require('discord.js');
 let members;
 let ownerId;
 const serverRoles = new Map(); // 서버별 역할 저장용
+const year = 3;
 
 const client = new Client({
     intents: [
@@ -151,7 +152,7 @@ async function ProcessNicknameChange(member, roles) {
             await member.setNickname(`${name} (3학년)`);
             await UpdateRoles(member, roles.thirdGradeRole, roles.gradeRoles);
         } else if (nickname.includes('3학년')) {
-            await member.setNickname(`${name} (졸업생)`);
+            await member.setNickname(`${name} (${year}기)`);
             await member.roles.remove(roles.student);
             await UpdateRoles(member, roles.graduate, roles.gradeRoles);
         }
