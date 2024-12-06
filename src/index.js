@@ -1,5 +1,5 @@
 const config = require('./config/config.json');
-const { Client, IntentsBitField } = require('discord.js');
+const { Client, GatewayIntentBits,REST, IntentsBitField, Routes } = require('discord.js');
 
 let members;
 let ownerId;
@@ -8,6 +8,7 @@ const year = 3;
 
 const client = new Client({
     intents: [
+        GatewayIntentBits.Guilds,
         IntentsBitField.Flags.Guilds,
         IntentsBitField.Flags.GuildMembers,
         IntentsBitField.Flags.GuildMessages,
@@ -15,42 +16,132 @@ const client = new Client({
     ],
 });
 
-client.once('ready', async () => {
+client.once('ready', () => {
     console.log(`[!] Bot Login: ${client.user.tag}`);
 });
 
-client.on('messageCreate', async message => {
-    if (message.author.bot || !message.guild) return;
+client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isCommand()) return;
 
-    if (!message.content.startsWith(config.prefix)) return;
-
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/);
-    const command = args.shift().toLowerCase();
-
-    const currentGuild = message.guild; // 현재 명령어를 보낸 서버
+    //const currentGuild = message.guild; // 현재 명령어를 보낸 서버
+    const currentGuild = interaction.guild;
     ownerId = currentGuild.ownerId;
 
-    if (command === 'init') {
-        await SaveMembers(currentGuild, message);
-        await GetRoles(currentGuild, message);
-    }
+    const { commandName } = interaction;
 
-    if (command === 'role') {
-        await RoleAssignment(currentGuild, message);
-    }
+    if (commandName === 'init') {
+        await SaveMembers(currentGuild, interaction);
+        await GetRoles(currentGuild, interaction);
 
-    if (command === 'change') {
-        await ChangeNickname(currentGuild, message);
+        await interaction.reply({
+            content: 'init',
+            ephemeral: true,
+        });
     }
+    else if (commandName === 'role') {
+        await RoleAssignment(currentGuild, interaction);
 
-    if (command === 'debug') {
-        await DebugRole(currentGuild, message);
+        await interaction.reply({
+            content: 'role',
+            ephemeral: true,
+        });
     }
+    else if (commandName === 'change') {
+        await ChangeNickname(currentGuild, interaction);
 
-    if (command === 'remove') {
-        await RemoveDebugRole(currentGuild, message);
+        await interaction.reply({
+            content: 'change',
+            ephemeral: true,
+        });
     }
-});
+    else if (commandName === 'debug') {
+        await DebugRole(currentGuild, interaction);
+
+        await interaction.reply({
+            content: 'debug',
+            ephemeral: true,
+        });
+    }
+    else if (commandName === 'remove') {
+        await RemoveDebugRole(currentGuild, interaction);
+
+        await interaction.reply({
+            content: 'remove',
+            ephemeral: true,
+        });
+    }
+})
+
+const commands = [
+    {
+        name: 'init',
+        description: '역할을 저장합니다. 21234'
+    },
+    {
+        name: 'role',
+        description: '학년에 맞는 역할을 부여합니다.12432'
+    },
+    {
+        name: 'change',
+        description: '학년을 바꾸고 역할을 부여합니다.14232'
+    },
+    {
+        name: 'debug',
+        description: '디버그용2142'
+    },
+    {
+        name: 'remove',
+        description: '디버그 제거21423'
+    },
+];
+
+const rest = new REST({ version: '10' }).setToken(config.token);
+
+(async () => {
+    try {
+        console.log('슬래시 명령어 등록 중...');
+        await rest.put(
+            Routes.applicationCommands('1307898413433618513'),
+            { body: commands }
+        );
+        console.log('슬래시 명령어 등록 완료!');
+    } catch (error) {
+        console.error(error);
+    }
+})();
+
+// client.on('messageCreate', async message => {
+//     if (message.author.bot || !message.guild) return;
+
+//     if (!message.content.startsWith(config.prefix)) return;
+
+//     const args = message.content.slice(config.prefix.length).trim().split(/ +/);
+//     const command = args.shift().toLowerCase();
+
+//     const currentGuild = message.guild; // 현재 명령어를 보낸 서버
+//     ownerId = currentGuild.ownerId;
+
+//     if (command === 'init') {
+//         await SaveMembers(currentGuild, message);
+//         await GetRoles(currentGuild, message);
+//     }
+
+//     if (command === 'role') {
+//         await RoleAssignment(currentGuild, message);
+//     }
+
+//     if (command === 'change') {
+//         await ChangeNickname(currentGuild, message);
+//     }
+
+//     if (command === 'debug') {
+//         await DebugRole(currentGuild, message);
+//     }
+
+//     if (command === 'remove') {
+//         await RemoveDebugRole(currentGuild, message);
+//     }
+// });
 
 async function SaveMembers(currentGuild, message) {
     members = await currentGuild.members.fetch();
@@ -105,7 +196,7 @@ async function RoleAssignment(currentGuild, message) {
 async function ChangeNickname(currentGuild, message) {
     const roles = serverRoles.get(currentGuild.id);
     if (!roles) {
-        return message.reply("역할이 초기화되지 않았습니다. `init` 명령을 사용하세요.");
+        return message.send("역할이 초기화되지 않았습니다. `init` 명령을 사용하세요.");
     }
 
     const memberList = Array.from(members.values())
