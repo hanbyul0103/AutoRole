@@ -1,5 +1,5 @@
 const config = require('./config/config.json');
-const { Client, GatewayIntentBits,REST, IntentsBitField, Routes } = require('discord.js');
+const { Client, GatewayIntentBits, REST, IntentsBitField, Routes } = require('discord.js');
 
 let members;
 let ownerId;
@@ -30,20 +30,16 @@ client.on('interactionCreate', async (interaction) => {
     const { commandName } = interaction;
 
     if (commandName === 'init') {
-        await SaveMembers(currentGuild, interaction);
-        await GetRoles(currentGuild, interaction);
+        await interaction.reply({ content: "init" });
 
-        await interaction.reply({
-            content: 'init',
-            ephemeral: true,
-        });
+        await SaveMembers(currentGuild);
+        await GetRoles(currentGuild);
     }
     else if (commandName === 'role') {
         await RoleAssignment(currentGuild, interaction);
 
         await interaction.reply({
             content: 'role',
-            ephemeral: true,
         });
     }
     else if (commandName === 'change') {
@@ -51,7 +47,6 @@ client.on('interactionCreate', async (interaction) => {
 
         await interaction.reply({
             content: 'change',
-            ephemeral: true,
         });
     }
     else if (commandName === 'debug') {
@@ -59,7 +54,6 @@ client.on('interactionCreate', async (interaction) => {
 
         await interaction.reply({
             content: 'debug',
-            ephemeral: true,
         });
     }
     else if (commandName === 'remove') {
@@ -67,7 +61,6 @@ client.on('interactionCreate', async (interaction) => {
 
         await interaction.reply({
             content: 'remove',
-            ephemeral: true,
         });
     }
 })
@@ -75,23 +68,23 @@ client.on('interactionCreate', async (interaction) => {
 const commands = [
     {
         name: 'init',
-        description: '역할을 저장합니다. 21234'
+        description: '역할을 저장합니다.'
     },
     {
         name: 'role',
-        description: '학년에 맞는 역할을 부여합니다.12432'
+        description: '학년에 맞는 역할을 부여합니다.'
     },
     {
         name: 'change',
-        description: '학년을 바꾸고 역할을 부여합니다.14232'
+        description: '학년을 바꾸고 역할을 부여합니다.'
     },
     {
         name: 'debug',
-        description: '디버그용2142'
+        description: '디버그용'
     },
     {
         name: 'remove',
-        description: '디버그 제거21423'
+        description: '디버그 제거'
     },
 ];
 
@@ -110,46 +103,12 @@ const rest = new REST({ version: '10' }).setToken(config.token);
     }
 })();
 
-// client.on('messageCreate', async message => {
-//     if (message.author.bot || !message.guild) return;
-
-//     if (!message.content.startsWith(config.prefix)) return;
-
-//     const args = message.content.slice(config.prefix.length).trim().split(/ +/);
-//     const command = args.shift().toLowerCase();
-
-//     const currentGuild = message.guild; // 현재 명령어를 보낸 서버
-//     ownerId = currentGuild.ownerId;
-
-//     if (command === 'init') {
-//         await SaveMembers(currentGuild, message);
-//         await GetRoles(currentGuild, message);
-//     }
-
-//     if (command === 'role') {
-//         await RoleAssignment(currentGuild, message);
-//     }
-
-//     if (command === 'change') {
-//         await ChangeNickname(currentGuild, message);
-//     }
-
-//     if (command === 'debug') {
-//         await DebugRole(currentGuild, message);
-//     }
-
-//     if (command === 'remove') {
-//         await RemoveDebugRole(currentGuild, message);
-//     }
-// });
-
-async function SaveMembers(currentGuild, message) {
+async function SaveMembers(currentGuild) {
     members = await currentGuild.members.fetch();
-    message.reply("멤버 초기화 완료");
     console.log(`Members fetched for guild: ${currentGuild.name}`);
 }
 
-async function GetRoles(currentGuild, message) {
+async function GetRoles(currentGuild) {
     try {
         const roles = {
             firstGradeRole: currentGuild.roles.cache.find(role => role.name === '1학년'),
@@ -169,7 +128,7 @@ async function GetRoles(currentGuild, message) {
 
         serverRoles.set(currentGuild.id, roles);
 
-        message.reply(`${currentGuild.name} 서버의 역할이 저장되었습니다.`);
+        console.log(`${currentGuild.name} 서버의 역할이 저장되었습니다.`);
     } catch (error) {
         console.error(`역할을 불러오는 중 오류 발생 ${currentGuild.name}:`, error);
     }
