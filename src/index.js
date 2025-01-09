@@ -23,45 +23,28 @@ client.once('ready', () => {
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) return;
 
-    //const currentGuild = message.guild; // 현재 명령어를 보낸 서버
     const currentGuild = interaction.guild;
     ownerId = currentGuild.ownerId;
 
     const { commandName } = interaction;
 
     if (commandName === 'init') {
-        await interaction.reply({ content: "init" });
-
         await SaveMembers(currentGuild);
         await GetRoles(currentGuild);
+
+        await interaction.reply("Init");
     }
     else if (commandName === 'role') {
         await RoleAssignment(currentGuild, interaction);
-
-        await interaction.reply({
-            content: 'role',
-        });
     }
     else if (commandName === 'change') {
         await ChangeNickname(currentGuild, interaction);
-
-        await interaction.reply({
-            content: 'change',
-        });
     }
     else if (commandName === 'debug') {
         await DebugRole(currentGuild, interaction);
-
-        await interaction.reply({
-            content: 'debug',
-        });
     }
     else if (commandName === 'remove') {
         await RemoveDebugRole(currentGuild, interaction);
-
-        await interaction.reply({
-            content: 'remove',
-        });
     }
 })
 
