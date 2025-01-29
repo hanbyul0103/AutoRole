@@ -135,21 +135,22 @@ async function RoleAssignment(currentGuild, message) {
     await message.reply("역할 부여 작업 완료");
 }
 
-async function ChangeNickname(currentGuild, message) {
+async function ChangeNickname(currentGuild, interaction) {
     const roles = serverRoles.get(currentGuild.id);
     if (!roles) {
-        return message.send("역할이 초기화되지 않았습니다. `init` 명령을 사용하세요.");
+        return interaction.reply("역할이 초기화되지 않았습니다. `/init` 명령을 사용하세요.");
     }
 
-    const memberList = Array.from(members.values())
-        .filter(member => member.id !== ownerId);
+    await interaction.deferReply(); // 응답 대기 요청
+
+    const memberList = Array.from(members.values()).filter(member => member.id !== ownerId);
 
     for (const member of memberList) {
         await ProcessNicknameChange(member, roles);
         await delay(3); // 3ms 대기
     }
 
-    await message.reply('변경 완료');
+    await interaction.editReply('변경 완료'); // 최종 응답
 }
 
 async function ProcessMemberRole(member, roles) {
@@ -176,6 +177,10 @@ async function ProcessMemberRole(member, roles) {
 async function ProcessNicknameChange(member, roles) {
     const nickname = member.nickname || member.user.username;
     const name = nickname.split(' ')[0];
+
+    if (nickname.includes(`${year - 1}기`)) {
+        return;
+    }
 
     try {
         if (nickname.includes('1학년')) {
@@ -239,5 +244,15 @@ async function RemoveDebugRole(currentGuild, message) {
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+client.on('guildMemberAdd', async member => {
+    const classRole = member.guild.roles.cache.find(role => role.name === '1학년');
+    const studentRole = member.guild.roles.cache.find(role => role.name === "재학생");
+
+    if (classRole && studentRole) {
+        await member.roles.add(classRole);
+        await member.roles.add(studentRole);
+    }
+});
 
 client.login(config.token);
