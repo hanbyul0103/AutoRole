@@ -1,0 +1,27 @@
+{
+    "roles": {
+        "1st": "roleId",
+        "2nd": "roleId",
+        "3rd": "roleId"
+    },
+    "members": [
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1",
+        "member1"
+    ]
+}
