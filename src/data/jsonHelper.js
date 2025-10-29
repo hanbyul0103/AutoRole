@@ -39,4 +39,6 @@ function writeFile(filePath, data) {
     }
 }
 
+// TODO: create server.json file
+
 export { readFile, writeFile };
