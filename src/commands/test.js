@@ -1,4 +1,5 @@
 // 월, 일을 입력하면 json에서 삭제됨 (월, 일 안 쓰면 오늘)
+
 import {
     ApplicationCommandOptionType
 } from "discord.js";
