@@ -16,6 +16,6 @@ export default {
         const commands = await loadCommands.getCommands();
         client.commands = commands; // client에 저장해서 다른 이벤트에서도 접근 가능하게 함
 
-        await jsonHelper.initializeServerFiles(client);
+        // await jsonHelper.initializeServerFiles(client);
     },
 };
