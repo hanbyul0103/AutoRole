@@ -1,6 +1,7 @@
 // 외부 함수
 import * as commandRegister from "../utils/commandRegister.js";
 import * as loadCommands from "../utils/loadCommands.js";
+import * as jsonHelper from "../data/jsonHelper.js";
 
 export default {
     name: "ready",
@@ -14,5 +15,7 @@ export default {
         // 명령어 목록 로드
         const commands = await loadCommands.getCommands();
         client.commands = commands; // client에 저장해서 다른 이벤트에서도 접근 가능하게 함
+
+        await jsonHelper.initializeServerFiles(client);
     },
 };
