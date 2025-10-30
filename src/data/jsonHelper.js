@@ -5,7 +5,6 @@ import fs from 'fs';
 import path from 'path';
 
 // 외부 함수
-import { _ } from '../utils/Core/defines.js';
 
 function isFileExist(filePath) {
     return fs.existsSync(filePath);
@@ -43,7 +42,7 @@ function writeFile(filePath, data) {
     }
 }
 
-function getDirectory(baseDirectory = './src/data', directoryName = null) {
+function getDirectory(directoryName = null, baseDirectory = './src/data') {
     let newDirectory;
 
     if (!directoryName) newDirectory = baseDirectory;
@@ -61,10 +60,10 @@ function getDirectory(baseDirectory = './src/data', directoryName = null) {
 // TODO: create server.json files
 async function initializeServerFiles(client) {
     // 서버 json 담겨있는 폴더
-    const serverDataDirectory = getDirectory(_, "serverData");
+    const serverDataDirectory = getDirectory("serverData");
 
     // fileStatus.json 경로
-    const fileStatusPath = path.join(getDirectory(_), "fileStatus.json");
+    const fileStatusPath = path.join(getDirectory(), "fileStatus.json");
 
     // fileStatus.json 파일 읽기
     let fileStatus = readFile(fileStatusPath);
@@ -122,9 +121,10 @@ async function initializeServerFiles(client) {
                 roles: {
                     st: "",
                     nd: "",
-                    rd: ""
+                    rd: "",
+                    graduate: ""
                 },
-                "memberDatas": memberDatas
+                memberDatas: memberDatas
             };
 
             writeFile(dataPath, data);

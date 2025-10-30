@@ -5,13 +5,11 @@ import {
 } from "discord.js";
 
 // 라이브러리
-import fs from 'fs';
 import path from 'path';
 
 // 외부 함수
 import * as embedGenerator from "../utils/embedGenerator.js";
 import * as jsonHelper from "../data/jsonHelper.js";
-import { _ } from "../utils/Core/defines.js";
 
 export default {
     name: 'register-roles',
@@ -35,33 +33,41 @@ export default {
             required: true,
             type: ApplicationCommandOptionType.Role,
         },
+        {
+            name: 'graduate',
+            description: '졸업생 역할',
+            required: true,
+            type: ApplicationCommandOptionType.Role,
+        },
     ],
     callback: async (client, interaction) => {
         const st = interaction.options.getRole("1st");
         const nd = interaction.options.getRole("2nd");
         const rd = interaction.options.getRole("3rd");
+        const graduate = interaction.options.getRole("graduate");
 
-        const serverDataDirectory = jsonHelper.getDirectory(_, "serverData");
+        const serverDataDirectory = jsonHelper.getDirectory("serverData");
         const serverDataPath = path.join(serverDataDirectory, `${interaction.guild.id}.json`);
 
         const serverData = jsonHelper.readFile(serverDataPath);
 
+        if (serverData.roles.st !== "") return;
+
         serverData.roles.st = st.id;
         serverData.roles.nd = nd.id;
         serverData.roles.rd = rd.id;
+        serverData.roles.graduate = graduate.id;
 
         jsonHelper.writeFile(serverDataPath, serverData);
 
-        const roles = [st, nd, rd];
+        const roles = [st, nd, rd, graduate];
+        const gradeLabels = ["1학년", "2학년", "3학년", "졸업생"];
 
-        let fields = [];
-        for (let i = 0; i < 3; i++) {
-            fields.push({
-                name: `\`${i + 1}학년\``,
-                value: `${roles[i]}`,
-                inline: true
-            });
-        }
+        const fields = roles.map((role, index) => ({
+            name: `\`${gradeLabels[index]}\``,
+            value: `<@&${role.id}>`,
+            inline: true
+        }));
 
         const replyEmbed = embedGenerator.createEmbed({
             fields: fields,
