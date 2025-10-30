@@ -139,4 +139,4 @@ async function initializeServerFiles(client) {
     //#endregion
 }
 
-export { readFile, writeFile, initializeServerFiles };
+export { readFile, writeFile, getDirectory, initializeServerFiles };
