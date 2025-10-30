@@ -34,6 +34,12 @@ export default {
             type: ApplicationCommandOptionType.Role,
         },
         {
+            name: 'student',
+            description: '재학생 역할',
+            required: true,
+            type: ApplicationCommandOptionType.Role,
+        },
+        {
             name: 'graduate',
             description: '졸업생 역할',
             required: true,
@@ -44,6 +50,7 @@ export default {
         const st = interaction.options.getRole("1st");
         const nd = interaction.options.getRole("2nd");
         const rd = interaction.options.getRole("3rd");
+        const student = interaction.options.getRole("student");
         const graduate = interaction.options.getRole("graduate");
 
         const serverDataDirectory = jsonHelper.getDirectory("serverData");
@@ -51,22 +58,23 @@ export default {
 
         const serverData = jsonHelper.readFile(serverDataPath);
 
-        if (serverData.roles.st !== "") return;
-
-        serverData.roles.st = st.id;
-        serverData.roles.nd = nd.id;
-        serverData.roles.rd = rd.id;
-        serverData.roles.graduate = graduate.id;
+        serverData.roles = {
+            st: st.id,
+            nd: nd.id,
+            rd: rd.id,
+            student: student.id,
+            graduate: graduate.id
+        }
 
         jsonHelper.writeFile(serverDataPath, serverData);
 
-        const roles = [st, nd, rd, graduate];
-        const gradeLabels = ["1학년", "2학년", "3학년", "졸업생"];
+        const roles = [st, nd, rd, student, graduate];
+        const gradeLabels = ["1학년", "2학년", "3학년", "재학생", "졸업생"];
 
         const fields = roles.map((role, index) => ({
             name: `\`${gradeLabels[index]}\``,
             value: `<@&${role.id}>`,
-            inline: true
+            inline: false
         }));
 
         const replyEmbed = embedGenerator.createEmbed({
@@ -74,6 +82,6 @@ export default {
             timestamp: true
         });
 
-        await interaction.reply({ content: "역할이 등록되었습니다.", embeds: [replyEmbed] });
+        await interaction.reply({ content: "역할이 등록되었습니다.", embeds: [replyEmbed], ephemeral: true });
     }
 }
