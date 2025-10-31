@@ -38,7 +38,6 @@ export default {
                 nickname: member.nickname,
                 roles: member.roles.cache.map(r => r.id) // roles는 Collection이므로 id 배열로 변환
             });
-            console.log(member);
         }
 
         serverData.members = membersData;
